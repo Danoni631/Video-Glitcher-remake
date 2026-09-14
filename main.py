@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, print_function
-
 import os
 import sys
 import traceback
 import subprocess
 import threading
 import time
-import ConfigParser
-import Tkinter as tk
-import tkFileDialog as filedialog
-import tkMessageBox as messagebox
+import configparser as ConfigParser
+import tkinter as tk
+import tkinter.filedialog as filedialog
+import tkinter.messagebox as messagebox
 
 if getattr(sys, 'frozen', False):
     SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.executable))
 else:
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 CONFIG_PATH = os.path.join(SCRIPT_DIR, "settings.ini")
 ERROR_LOG = os.path.join(SCRIPT_DIR, "error.log")
 ICON_PATH = os.path.join(SCRIPT_DIR, "glitch.ico")
@@ -71,12 +70,30 @@ def log_error(msg):
             f.write(b"\n=== ")
             f.write(time.strftime("%Y-%m-%d %H:%M:%S").encode('ascii', 'replace'))
             f.write(b" ===\n")
-            f.write(msg.encode('utf-8', 'replace'))
+            if isinstance(msg, str):
+                msg = msg.encode('utf-8', 'replace')
+            f.write(msg)
             f.write(b"\n")
         finally:
             f.close()
     except Exception:
         pass
+
+
+def safe_str(s):
+    if isinstance(s, str):
+        return s
+    if isinstance(s, bytes):
+        for enc in ('cp1251', 'cp866', 'utf-8'):
+            try:
+                return s.decode(enc)
+            except Exception:
+                continue
+        return s.decode('ascii', 'replace')
+    try:
+        return str(s)
+    except Exception:
+        return "?"
 
 
 def load_app_icon():
@@ -94,7 +111,7 @@ def load_app_icon():
         )
         return h or None
     except Exception as e:
-        log_error(u"load_app_icon: " + unicode(e))
+        log_error("load_app_icon: " + safe_str(e))
         return None
 
 
@@ -107,7 +124,7 @@ def set_window_icon(w):
         try:
             w.iconbitmap(ICON_PATH)
         except Exception as e:
-            log_error(u"set_window_icon: " + unicode(e))
+            log_error("set_window_icon: " + safe_str(e))
 
 
 def show_balloon(hwnd, title, text, hicon=None):
@@ -141,115 +158,115 @@ def show_balloon(hwnd, title, text, hicon=None):
             except Exception:
                 pass
         t = threading.Thread(target=cleanup)
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
     except Exception as e:
-        log_error(u"show_balloon: " + unicode(e))
+        log_error("show_balloon: " + safe_str(e))
 
 
 TRANSLATIONS = {
     'ru': {
-        'title': u'Video Glitcher',
-        'lang_label': u'Язык:', 'theme_label': u'Тема:', 'lang_name': u'Русский',
-        'input_video': u'Входное видео:',
-        'output_dir': u'Папка для сохранения:',
-        'output_name': u'Имя выходного файла (без расширения):',
-        'btn_browse': u'Выбрать...', 'btn_process': u'Обработать видео',
-        'btn_play': u'Воспроизвести', 'log_label': u'Лог ffmpeg:',
-        'err': u'Ошибка', 'warn': u'Предупреждение',
-        'ffmpeg_not_found': u'ffmpeg не найден',
-        'ffmpeg_not_found_msg': u'Положите ffmpeg.exe рядом со скриптом.',
-        'ffplay_not_found': u'ffplay не найден',
-        'ffplay_not_found_msg': u'Положите ffplay.exe рядом со скриптом.',
-        'file_not_found': u'Файл не найден:', 'dir_not_found': u'Папка не найдена:',
-        'enter_name': u'Введите имя выходного файла.',
-        'same_file': u'Выходной файл совпадает с входным.',
-        'verify_failed': u'Проверка не прошла',
-        'verify_failed_hint': u'Файл сохранён, но может не воспроизводиться.',
-        'saved': u'Сохранено:', 'play_now': u'Воспроизвести сейчас?',
-        'no_file_to_play': u'Нет файла для воспроизведения.',
-        'error_ffmpeg': u'Ошибка ffmpeg', 'success': u'Успех',
-        'ffmpeg_start': u'Запуск ffmpeg...',
-        'done_checking': u'Готово, проверяем результат...',
-        'verify_ok': u'Проверка пройдена:', 'verify_fail': u'Проверка не прошла:',
-        'size_bytes': u'Размер:', 'playing': u'Воспроизведение:',
-        'choose_video_title': u'Выберите видео', 'choose_dir_title': u'Куда сохранить',
-        'all_files': u'Все файлы', 'video_files': u'Видео',
-        'empty_file': u'Файл пустой (0 байт).', 'not_found_path': u'Файл не найден:',
-        'tray_title': u'Готово', 'tray_msg': u'Видео успешно обработано',
-        'first_run_title': u'Первый запуск',
-        'first_run_lang': u'Язык:',
-        'first_run_theme': u'Тема:',
-        'theme_light_label': u'Светлая',
-        'theme_dark_label': u'Тёмная',
+        'title': 'Video Glitcher',
+        'lang_label': 'Язык:', 'theme_label': 'Тема:', 'lang_name': 'Русский',
+        'input_video': 'Входное видео:',
+        'output_dir': 'Папка для сохранения:',
+        'output_name': 'Имя выходного файла (без расширения):',
+        'btn_browse': 'Выбрать...', 'btn_process': 'Обработать видео',
+        'btn_play': 'Воспроизвести', 'log_label': 'Лог ffmpeg:',
+        'err': 'Ошибка', 'warn': 'Предупреждение',
+        'ffmpeg_not_found': 'ffmpeg не найден',
+        'ffmpeg_not_found_msg': 'Положите ffmpeg.exe рядом со скриптом.',
+        'ffplay_not_found': 'ffplay не найден',
+        'ffplay_not_found_msg': 'Положите ffplay.exe рядом со скриптом.',
+        'file_not_found': 'Файл не найден:', 'dir_not_found': 'Папка не найдена:',
+        'enter_name': 'Введите имя выходного файла.',
+        'same_file': 'Выходной файл совпадает с входным.',
+        'verify_failed': 'Проверка не прошла',
+        'verify_failed_hint': 'Файл сохранён, но может не воспроизводиться.',
+        'saved': 'Сохранено:', 'play_now': 'Воспроизвести сейчас?',
+        'no_file_to_play': 'Нет файла для воспроизведения.',
+        'error_ffmpeg': 'Ошибка ffmpeg', 'success': 'Успех',
+        'ffmpeg_start': 'Запуск ffmpeg...',
+        'done_checking': 'Готово, проверяем результат...',
+        'verify_ok': 'Проверка пройдена:', 'verify_fail': 'Проверка не прошла:',
+        'size_bytes': 'Размер:', 'playing': 'Воспроизведение:',
+        'choose_video_title': 'Выберите видео', 'choose_dir_title': 'Куда сохранить',
+        'all_files': 'Все файлы', 'video_files': 'Видео',
+        'empty_file': 'Файл пустой (0 байт).', 'not_found_path': 'Файл не найден:',
+        'tray_title': 'Готово', 'tray_msg': 'Видео успешно обработано',
+        'first_run_title': 'Первый запуск',
+        'first_run_lang': 'Язык:',
+        'first_run_theme': 'Тема:',
+        'theme_light_label': 'Светлая',
+        'theme_dark_label': 'Тёмная',
     },
     'en': {
-        'title': u'Video Glitcher',
-        'lang_label': u'Language:', 'theme_label': u'Theme:', 'lang_name': u'English',
-        'input_video': u'Input video:', 'output_dir': u'Output folder:',
-        'output_name': u'Output file name (without extension):',
-        'btn_browse': u'Browse...', 'btn_process': u'Process video',
-        'btn_play': u'Play', 'log_label': u'ffmpeg log:',
-        'err': u'Error', 'warn': u'Warning',
-        'ffmpeg_not_found': u'ffmpeg not found',
-        'ffmpeg_not_found_msg': u'Put ffmpeg.exe next to the script.',
-        'ffplay_not_found': u'ffplay not found',
-        'ffplay_not_found_msg': u'Put ffplay.exe next to the script.',
-        'file_not_found': u'File not found:', 'dir_not_found': u'Folder not found:',
-        'enter_name': u'Enter output file name.',
-        'same_file': u'Output file is the same as input.',
-        'verify_failed': u'Verification failed',
-        'verify_failed_hint': u'File saved but may not play.',
-        'saved': u'Saved:', 'play_now': u'Play now?',
-        'no_file_to_play': u'No file to play.',
-        'error_ffmpeg': u'ffmpeg error', 'success': u'Success',
-        'ffmpeg_start': u'Starting ffmpeg...',
-        'done_checking': u'Done, verifying...',
-        'verify_ok': u'Verification passed:', 'verify_fail': u'Verification failed:',
-        'size_bytes': u'Size:', 'playing': u'Playing:',
-        'choose_video_title': u'Choose a video', 'choose_dir_title': u'Choose output folder',
-        'all_files': u'All files', 'video_files': u'Video',
-        'empty_file': u'File is empty (0 bytes).', 'not_found_path': u'File not found:',
-        'tray_title': u'Done', 'tray_msg': u'Video processed successfully',
-        'first_run_title': u'First launch',
-        'first_run_lang': u'Language:',
-        'first_run_theme': u'Theme:',
-        'theme_light_label': u'Light',
-        'theme_dark_label': u'Dark',
+        'title': 'Video Glitcher',
+        'lang_label': 'Language:', 'theme_label': 'Theme:', 'lang_name': 'English',
+        'input_video': 'Input video:', 'output_dir': 'Output folder:',
+        'output_name': 'Output file name (without extension):',
+        'btn_browse': 'Browse...', 'btn_process': 'Process video',
+        'btn_play': 'Play', 'log_label': 'ffmpeg log:',
+        'err': 'Error', 'warn': 'Warning',
+        'ffmpeg_not_found': 'ffmpeg not found',
+        'ffmpeg_not_found_msg': 'Put ffmpeg.exe next to the script.',
+        'ffplay_not_found': 'ffplay not found',
+        'ffplay_not_found_msg': 'Put ffplay.exe next to the script.',
+        'file_not_found': 'File not found:', 'dir_not_found': 'Folder not found:',
+        'enter_name': 'Enter output file name.',
+        'same_file': 'Output file is the same as input.',
+        'verify_failed': 'Verification failed',
+        'verify_failed_hint': 'File saved but may not play.',
+        'saved': 'Saved:', 'play_now': 'Play now?',
+        'no_file_to_play': 'No file to play.',
+        'error_ffmpeg': 'ffmpeg error', 'success': 'Success',
+        'ffmpeg_start': 'Starting ffmpeg...',
+        'done_checking': 'Done, verifying...',
+        'verify_ok': 'Verification passed:', 'verify_fail': 'Verification failed:',
+        'size_bytes': 'Size:', 'playing': 'Playing:',
+        'choose_video_title': 'Choose a video', 'choose_dir_title': 'Choose output folder',
+        'all_files': 'All files', 'video_files': 'Video',
+        'empty_file': 'File is empty (0 bytes).', 'not_found_path': 'File not found:',
+        'tray_title': 'Done', 'tray_msg': 'Video processed successfully',
+        'first_run_title': 'First launch',
+        'first_run_lang': 'Language:',
+        'first_run_theme': 'Theme:',
+        'theme_light_label': 'Light',
+        'theme_dark_label': 'Dark',
     },
     'zh': {
-        'title': u'视频处理工具',
-        'lang_label': u'语言:', 'theme_label': u'主题:', 'lang_name': u'中文',
-        'input_video': u'输入视频:', 'output_dir': u'输出文件夹:',
-        'output_name': u'输出文件名（不含扩展名）:',
-        'btn_browse': u'浏览...', 'btn_process': u'处理视频',
-        'btn_play': u'播放', 'log_label': u'ffmpeg 日志:',
-        'err': u'错误', 'warn': u'警告',
-        'ffmpeg_not_found': u'未找到 ffmpeg',
-        'ffmpeg_not_found_msg': u'请将 ffmpeg.exe 放在脚本同一目录下。',
-        'ffplay_not_found': u'未找到 ffplay',
-        'ffplay_not_found_msg': u'请将 ffplay.exe 放在脚本同一目录下。',
-        'file_not_found': u'文件未找到:', 'dir_not_found': u'文件夹未找到:',
-        'enter_name': u'请输入输出文件名。',
-        'same_file': u'输出文件与输入文件相同。',
-        'verify_failed': u'验证失败',
-        'verify_failed_hint': u'文件已保存，但可能无法播放。',
-        'saved': u'已保存:', 'play_now': u'现在播放吗？',
-        'no_file_to_play': u'没有可播放的文件。',
-        'error_ffmpeg': u'ffmpeg 错误', 'success': u'成功',
-        'ffmpeg_start': u'正在启动 ffmpeg...',
-        'done_checking': u'完成，正在验证...',
-        'verify_ok': u'验证通过:', 'verify_fail': u'验证失败:',
-        'size_bytes': u'大小:', 'playing': u'正在播放:',
-        'choose_video_title': u'选择视频', 'choose_dir_title': u'选择输出文件夹',
-        'all_files': u'所有文件', 'video_files': u'视频',
-        'empty_file': u'文件为空（0 字节）。', 'not_found_path': u'文件未找到:',
-        'tray_title': u'完成', 'tray_msg': u'视频处理成功',
-        'first_run_title': u'首次启动',
-        'first_run_lang': u'语言:',
-        'first_run_theme': u'主题:',
-        'theme_light_label': u'浅色',
-        'theme_dark_label': u'深色',
+        'title': '视频处理工具',
+        'lang_label': '语言:', 'theme_label': '主题:', 'lang_name': '中文',
+        'input_video': '输入视频:', 'output_dir': '输出文件夹:',
+        'output_name': '输出文件名（不含扩展名）:',
+        'btn_browse': '浏览...', 'btn_process': '处理视频',
+        'btn_play': '播放', 'log_label': 'ffmpeg 日志:',
+        'err': '错误', 'warn': '警告',
+        'ffmpeg_not_found': '未找到 ffmpeg',
+        'ffmpeg_not_found_msg': '请将 ffmpeg.exe 放在脚本同一目录下。',
+        'ffplay_not_found': '未找到 ffplay',
+        'ffplay_not_found_msg': '请将 ffplay.exe 放在脚本同一目录下。',
+        'file_not_found': '文件未找到:', 'dir_not_found': '文件夹未找到:',
+        'enter_name': '请输入输出文件名。',
+        'same_file': '输出文件与输入文件相同。',
+        'verify_failed': '验证失败',
+        'verify_failed_hint': '文件已保存，但可能无法播放。',
+        'saved': '已保存:', 'play_now': '现在播放吗？',
+        'no_file_to_play': '没有可播放的文件。',
+        'error_ffmpeg': 'ffmpeg 错误', 'success': '成功',
+        'ffmpeg_start': '正在启动 ffmpeg...',
+        'done_checking': '完成，正在验证...',
+        'verify_ok': '验证通过:', 'verify_fail': '验证失败:',
+        'size_bytes': '大小:', 'playing': '正在播放:',
+        'choose_video_title': '选择视频', 'choose_dir_title': '选择输出文件夹',
+        'all_files': '所有文件', 'video_files': '视频',
+        'empty_file': '文件为空（0 字节）。', 'not_found_path': '文件未找到:',
+        'tray_title': '完成', 'tray_msg': '视频处理成功',
+        'first_run_title': '首次启动',
+        'first_run_lang': '语言:',
+        'first_run_theme': '主题:',
+        'theme_light_label': '浅色',
+        'theme_dark_label': '深色',
     },
 }
 
@@ -271,31 +288,6 @@ THEMES = {
 }
 
 
-def to_bytes(s):
-    if isinstance(s, bytes):
-        return s
-    try:
-        return s.encode('mbcs')
-    except Exception:
-        return s.encode('utf-8', 'replace')
-
-
-def safe_unicode(s):
-    if isinstance(s, unicode):
-        return s
-    if isinstance(s, bytes):
-        for enc in ('cp1251', 'cp866', 'utf-8'):
-            try:
-                return s.decode(enc)
-            except Exception:
-                continue
-        return s.decode('ascii', 'replace')
-    try:
-        return unicode(s)
-    except Exception:
-        return u"?"
-
-
 def _find_exe(*names):
     for name in names:
         p = os.path.join(SCRIPT_DIR, name)
@@ -309,6 +301,7 @@ def _find_exe(*names):
             if os.path.isfile(p):
                 return p
     return None
+
 
 def ffmpeg_exe():
     return _find_exe("ffmpeg.exe", "ffmpeg")
@@ -330,9 +323,12 @@ class Config(object):
         self._default('geometry', '760x720')
         if os.path.isfile(path):
             try:
-                self.parser.read(path)
+                self.parser.read(path, encoding='utf-8')
             except Exception:
-                pass
+                try:
+                    self.parser.read(path)
+                except Exception:
+                    pass
 
     def _default(self, key, val):
         if not self.parser.has_option('app', key):
@@ -341,57 +337,56 @@ class Config(object):
             except Exception:
                 pass
 
-    def get(self, key, fallback=u''):
+    def get(self, key, fallback=''):
         try:
-            v = self.parser.get('app', key)
-            return safe_unicode(v)
+            return self.parser.get('app', key)
         except Exception:
             return fallback
 
     def set(self, key, val):
         try:
-            if isinstance(val, unicode):
-                val = val.encode('utf-8')
+            if not isinstance(val, str):
+                val = safe_str(val)
             self.parser.set('app', str(key), val)
         except Exception:
             pass
 
     def save(self):
         try:
-            f = open(self.path, 'wb')
+            f = open(self.path, 'w', encoding='utf-8')
             try:
                 self.parser.write(f)
             finally:
                 f.close()
         except Exception as e:
-            log_error(u"Config.save: " + unicode(e))
+            log_error("Config.save: " + safe_str(e))
 
 
 class FirstRunDialog(tk.Toplevel):
     def __init__(self, parent):
         tk.Toplevel.__init__(self, parent)
         self.result = None
-        self.title(u"First launch / Первый запуск / 首次启动")
+        self.title("First launch / Первый запуск / 首次启动")
         self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.on_cancel)
         set_window_icon(self)
 
-        tk.Label(self, text=u"Language / Язык / 语言:",
+        tk.Label(self, text="Language / Язык / 语言:",
                  font=("Arial", 11, "bold")).pack(pady=(20, 6))
         self.lang_var = tk.StringVar(value='ru')
         lf = tk.Frame(self)
         lf.pack()
-        for code, label in [('ru', u'Русский'), ('en', u'English'), ('zh', u'中文')]:
+        for code, label in [('ru', 'Русский'), ('en', 'English'), ('zh', '中文')]:
             tk.Radiobutton(lf, text=label, variable=self.lang_var,
                            value=code).pack(side='left', padx=10)
 
-        tk.Label(self, text=u"Theme / Тема / 主题:",
+        tk.Label(self, text="Theme / Тема / 主题:",
                  font=("Arial", 11, "bold")).pack(pady=(20, 6))
         self.theme_var = tk.StringVar(value='light')
         tf = tk.Frame(self)
         tf.pack()
-        for code, label in [('light', u'Light / Светлая / 浅色'),
-                            ('dark', u'Dark / Тёмная / 深色')]:
+        for code, label in [('light', 'Light / Светлая / 浅色'),
+                            ('dark', 'Dark / Тёмная / 深色')]:
             tk.Radiobutton(tf, text=label, variable=self.theme_var,
                            value=code).pack(side='left', padx=10)
 
@@ -528,7 +523,7 @@ class VideoGlitcherApp(object):
                 self._update_language()
                 self._apply_theme()
         except Exception:
-            log_error(u"_show_first_run:\n" + traceback.format_exc())
+            log_error("_show_first_run:\n" + traceback.format_exc())
 
     def _on_lang_change(self, val):
         self.lang = val
@@ -611,32 +606,22 @@ class VideoGlitcherApp(object):
         )
         if not path:
             return
-        if isinstance(path, bytes):
-            try:
-                path = path.decode('mbcs')
-            except Exception:
-                path = safe_unicode(path)
         path = os.path.normpath(os.path.abspath(path))
         self.input_path.set(path)
         self.output_dir.set(os.path.dirname(path))
         base = os.path.splitext(os.path.basename(path))[0]
-        self.output_name.set(base + u"_glitch")
+        self.output_name.set(base + "_glitch")
 
     def select_output_dir(self):
         d = filedialog.askdirectory(title=self.tr('choose_dir_title'))
         if d:
-            if isinstance(d, bytes):
-                try:
-                    d = d.decode('mbcs')
-                except Exception:
-                    d = safe_unicode(d)
             self.output_dir.set(os.path.normpath(os.path.abspath(d)))
 
     def log_msg(self, msg):
-        msg = safe_unicode(msg)
+        msg = safe_str(msg)
         self.log.configure(state='normal')
         try:
-            self.log.insert('end', msg + u"\n")
+            self.log.insert('end', msg + "\n")
             lines = int(self.log.index('end-1c').split('.')[0])
             if lines > 400:
                 self.log.delete('1.0', '100.0')
@@ -652,26 +637,26 @@ class VideoGlitcherApp(object):
                                  self.tr('ffmpeg_not_found_msg'))
             return
 
-        inp = safe_unicode(self.input_path.get()).strip().strip(u'"')
-        outdir = safe_unicode(self.output_dir.get()).strip().strip(u'"')
-        name = safe_unicode(self.output_name.get()).strip()
+        inp = self.input_path.get().strip().strip('"')
+        outdir = self.output_dir.get().strip().strip('"')
+        name = self.output_name.get().strip()
 
         if not inp or not os.path.isfile(inp):
-            messagebox.showerror(self.tr('err'), self.tr('file_not_found') + u"\n" + inp)
+            messagebox.showerror(self.tr('err'), self.tr('file_not_found') + "\n" + inp)
             return
         if not outdir or not os.path.isdir(outdir):
-            messagebox.showerror(self.tr('err'), self.tr('dir_not_found') + u"\n" + outdir)
+            messagebox.showerror(self.tr('err'), self.tr('dir_not_found') + "\n" + outdir)
             return
         if not name:
             messagebox.showerror(self.tr('err'), self.tr('enter_name'))
             return
 
-        if name.lower().endswith(u".mp4"):
+        if name.lower().endswith(".mp4"):
             name = name[:-4]
 
         inp = os.path.normpath(os.path.abspath(inp))
         outdir = os.path.normpath(os.path.abspath(outdir))
-        out_path = os.path.normpath(os.path.join(outdir, name + u".mp4"))
+        out_path = os.path.normpath(os.path.join(outdir, name + ".mp4"))
 
         if inp == out_path:
             messagebox.showerror(self.tr('err'), self.tr('same_file'))
@@ -688,68 +673,72 @@ class VideoGlitcherApp(object):
         self.play_btn.configure(state='disabled')
 
         t = threading.Thread(target=self._process, args=(exe, inp, out_path))
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
 
     def _process(self, exe, inp, out):
         try:
-            self.log_msg(u"ffmpeg: " + safe_unicode(exe))
-            self.log_msg(u"IN:  " + safe_unicode(inp))
-            self.log_msg(u"OUT: " + safe_unicode(out))
-            self.log_msg(self.tr('ffmpeg_start') + u"\n")
+            self.log_msg("ffmpeg: " + exe)
+            self.log_msg("IN:  " + inp)
+            self.log_msg("OUT: " + out)
+            self.log_msg(self.tr('ffmpeg_start') + "\n")
 
             cmd = [
-                safe_unicode(exe), u"-y",
-                u"-hide_banner", u"-loglevel", u"warning", u"-nostats",
-                u"-i", inp,
-                u"-c:v", u"mpeg4",
-                u"-c:a", u"ac3",
-                u"-q:v", u"31",
-                u"-vf", u"scale=480:320,setsar=1",
-                u"-af", u"volume=30dB",
-                u"-ar", u"32000",
-                u"-b:a", u"8k",
-                u"-r", u"15",
-                u"-strict", u"-2",
-                u"-bsf:v", u"noise=256",
+                exe, "-y",
+                "-hide_banner", "-loglevel", "warning", "-nostats",
+                "-i", inp,
+                "-c:v", "mpeg4",
+                "-c:a", "ac3",
+                "-q:v", "31",
+                "-vf", "scale=480:320,setsar=1",
+                "-af", "volume=30dB",
+                "-ar", "32000",
+                "-b:a", "8k",
+                "-r", "15",
+                "-strict", "-2",
+                "-bsf:v", "noise=256",
                 out,
             ]
-            self.log_msg(u"CMD: " + u" ".join(
-                (u'"' + a + u'"') if u" " in a else a for a in cmd
-            ) + u"\n")
+            self.log_msg("CMD: " + " ".join(
+                ('"' + a + '"') if " " in a else a for a in cmd
+            ) + "\n")
 
-            cmd_b = [to_bytes(x) for x in cmd]
             flags = CREATE_NO_WINDOW if os.name == 'nt' else 0
             proc = subprocess.Popen(
-                cmd_b, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 stdin=subprocess.PIPE, shell=False, creationflags=flags,
             )
             so, se = proc.communicate()
 
             if so:
-                self.log_msg(so)
+                self.log_msg("--- stdout ---")
+                self.log_msg(safe_str(so))
             if se:
-                self.log_msg(se)
+                self.log_msg("--- stderr ---")
+                self.log_msg(safe_str(se))
 
             if proc.returncode != 0:
-                err = safe_unicode(se)[-1500:] if se else u"(no details)"
-                self.log_msg(u"X ffmpeg rc=" + safe_unicode(proc.returncode))
+                err = safe_str(se)[-1500:] if se else "(no details)"
+                self.log_msg("X ffmpeg rc=" + safe_str(proc.returncode))
+                self.log_msg("--- error ---")
+                self.log_msg(err)
+                self.log_msg("--- end ---")
                 self.root.after(0, lambda m=err: messagebox.showerror(
                     self.tr('error_ffmpeg'), m))
                 return
 
-            self.log_msg(self.tr('done_checking') + u"\n")
+            self.log_msg(self.tr('done_checking') + "\n")
             ok, info = self._verify_output(exe, out)
             if not ok:
-                self.log_msg(self.tr('verify_fail') + u" " + safe_unicode(info))
-                self.root.after(0, lambda m=safe_unicode(info): messagebox.showwarning(
+                self.log_msg(self.tr('verify_fail') + " " + safe_str(info))
+                self.root.after(0, lambda m=safe_str(info): messagebox.showwarning(
                     self.tr('verify_failed'),
-                    m + u"\n\n" + self.tr('verify_failed_hint')))
+                    m + "\n\n" + self.tr('verify_failed_hint')))
                 return
 
             self.log_msg(self.tr('verify_ok'))
             self.log_msg(info)
-            self.log_msg(u"\nOK")
+            self.log_msg("\nOK")
 
             self.last_output = out
 
@@ -758,57 +747,57 @@ class VideoGlitcherApp(object):
                 show_balloon(hwnd, self.tr('tray_title'), self.tr('tray_msg'),
                              hicon=self.hicon)
             except Exception as e:
-                log_error(u"tray call: " + unicode(e))
+                log_error("tray call: " + safe_str(e))
 
             self.root.after(0, lambda: self._on_success(out))
 
         except Exception:
             err = traceback.format_exc()
-            log_error(u"_process:\n" + safe_unicode(err))
-            self.root.after(0, lambda m=safe_unicode(err): messagebox.showerror(
+            log_error("_process:\n" + safe_str(err))
+            self.root.after(0, lambda m=safe_str(err): messagebox.showerror(
                 self.tr('err'), m[-1200:]))
         finally:
             self.root.after(0, lambda: self.run_btn.configure(state='normal'))
 
     def _verify_output(self, exe, path):
         if not os.path.isfile(path):
-            return False, self.tr('not_found_path') + u" " + safe_unicode(path)
+            return False, self.tr('not_found_path') + " " + path
         size = os.path.getsize(path)
         if size == 0:
             return False, self.tr('empty_file')
-        self.log_msg(self.tr('size_bytes') + u" " + safe_unicode(size))
+        self.log_msg(self.tr('size_bytes') + " " + str(size))
 
         flags = CREATE_NO_WINDOW if os.name == 'nt' else 0
 
-        c1 = [safe_unicode(exe), u"-hide_banner", u"-loglevel", u"error",
-              u"-nostats", u"-i", path, u"-f", u"null", u"-"]
-        p1 = subprocess.Popen([to_bytes(x) for x in c1],
+        c1 = [exe, "-hide_banner", "-loglevel", "error",
+              "-nostats", "-i", path, "-f", "null", "-"]
+        p1 = subprocess.Popen(c1,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               stdin=subprocess.PIPE, shell=False, creationflags=flags)
         so1, se1 = p1.communicate()
         if p1.returncode != 0:
-            err = safe_unicode(se1).strip() if se1 else u"(no output)"
-            return False, u"decode rc=" + safe_unicode(p1.returncode) + u":\n" + err
+            err = safe_str(se1).strip() if se1 else "(no output)"
+            return False, "decode rc=" + str(p1.returncode) + ":\n" + err
 
-        c2 = [safe_unicode(exe), u"-hide_banner", u"-i", path]
-        p2 = subprocess.Popen([to_bytes(x) for x in c2],
+        c2 = [exe, "-hide_banner", "-i", path]
+        p2 = subprocess.Popen(c2,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               stdin=subprocess.PIPE, shell=False, creationflags=flags)
         so2, se2 = p2.communicate()
-        info = safe_unicode(se2)
+        info = safe_str(se2)
         lines = []
         for line in info.splitlines():
             s = line.strip()
-            if s.startswith(u"Duration") or s.startswith(u"Stream"):
+            if s.startswith("Duration") or s.startswith("Stream"):
                 lines.append(s)
-        return True, (u"\n".join(lines) if lines else u"(no metadata)")
+        return True, ("\n".join(lines) if lines else "(no metadata)")
 
     def _on_success(self, out):
         self.run_btn.configure(state='normal')
         self.play_btn.configure(state='normal')
         if messagebox.askyesno(self.tr('success'),
-                               self.tr('saved') + u"\n" + out +
-                               u"\n\n" + self.tr('play_now')):
+                               self.tr('saved') + "\n" + out +
+                               "\n\n" + self.tr('play_now')):
             self.play_output()
 
     def play_output(self):
@@ -827,16 +816,16 @@ class VideoGlitcherApp(object):
                 pass
 
         flags = CREATE_NO_WINDOW if os.name == 'nt' else 0
-        cmd = [safe_unicode(player),
-               u"-window_title", u"Glitch preview",
-               u"-autoexit",
+        cmd = [player,
+               "-window_title", "Glitch preview",
+               "-autoexit",
                self.last_output]
         try:
-            self.play_proc = subprocess.Popen([to_bytes(x) for x in cmd],
+            self.play_proc = subprocess.Popen(cmd,
                                               shell=False, creationflags=flags)
-            self.log_msg(self.tr('playing') + u" " + safe_unicode(self.last_output))
+            self.log_msg(self.tr('playing') + " " + self.last_output)
         except Exception as e:
-            messagebox.showerror(self.tr('err'), safe_unicode(e))
+            messagebox.showerror(self.tr('err'), safe_str(e))
 
     def on_close(self):
         try:
@@ -853,14 +842,17 @@ class VideoGlitcherApp(object):
                 self.play_proc.terminate()
         except Exception:
             pass
-        self.root.destroy()
+        try:
+            self.root.destroy()
+        except Exception:
+            pass
 
 
 def main():
     try:
         root = tk.Tk()
     except Exception:
-        log_error(u"Tk init failed:\n" + traceback.format_exc())
+        log_error("Tk init failed:\n" + traceback.format_exc())
         try:
             sys.stderr.write(traceback.format_exc())
         except Exception:
@@ -870,7 +862,7 @@ def main():
         app = VideoGlitcherApp(root)
     except Exception:
         err = traceback.format_exc()
-        log_error(u"VideoGlitcherApp init:\n" + err)
+        log_error("VideoGlitcherApp init:\n" + err)
         try:
             messagebox.showerror("Fatal error", err[-1500:])
         except Exception:
@@ -883,7 +875,7 @@ def main():
     try:
         root.mainloop()
     except Exception:
-        log_error(u"mainloop:\n" + traceback.format_exc())
+        log_error("mainloop:\n" + traceback.format_exc())
         return 1
     return 0
 
