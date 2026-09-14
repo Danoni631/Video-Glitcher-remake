@@ -1,3 +1,3 @@
 # Video-Glitcher
-Open Software by me
+Open Software by yt @Kwinda534
 
