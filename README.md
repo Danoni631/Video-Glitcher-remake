@@ -1,2 +1,3 @@
 # Video-Glitcher
-Open Software
+Open Software by me
+
